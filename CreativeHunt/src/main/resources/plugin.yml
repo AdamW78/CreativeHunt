@@ -1,0 +1,13 @@
+name: CreativeHunt
+main: online.x16.CreativeHunt.CreativeHunt
+version: 1.0
+description: A SpigotMC plugin that allows for a Minercraft manhunt with a temporary period in creative for the hunter
+api-version: 1.16
+author: AdamW78
+commands:
+   creativehunt:
+      description: Puts the user in creative-manhunt mode
+      aliases: chunt
+      permission: creativehunt.hunt
+      usage: "Usage: /<command> [on/off]"   
+permissions:
