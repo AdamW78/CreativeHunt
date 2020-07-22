@@ -3,16 +3,23 @@ package online.x16.CreativeHunt;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import online.x16.X16AutoShop.tools.Colorizer;
+import online.x16.CreativeHunt.tools.Colorizer;
 
 public class CreativeHunt extends JavaPlugin {
 
     private CreativeHuntMap map;
+    final FileConfiguration config = getConfig();
 	
 	public void onEnable() {
-    	getServer().getPluginManager().registerEvents(new OnRespawnListener(this), this);
+		config.addDefault("color-log", Boolean.valueOf(true));
+		config.addDefault("debug", Boolean.valueOf(false));
+		config.addDefault("creative-seconds", Integer.valueOf(30));
+		config.addDefault("prefix", String.valueOf("&9[CreativeHunt]"));
+		getServer().getPluginManager().registerEvents(new OnRespawnListener(this), this);
+		config.options().copyDefaults(true);
+        this.saveDefaultConfig();
     	this.getCommand("creativehunt").setExecutor(new CreativeHuntCommand(this));
     	map = new CreativeHuntMap(this);
     }
