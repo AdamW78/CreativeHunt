@@ -10,6 +10,6 @@ public class CreativeModeMap {
 	private HashMap<Player, ArrayList<Object>> map;
 	
 	public CreativeModeMap() {
-		
+		map = new HashMap<Player, ArrayList<Object>>();
 	}
 }
