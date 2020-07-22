@@ -1,5 +1,6 @@
 package online.x16.CreativeHunt;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -30,10 +31,11 @@ public class CreativeHuntCommand implements CommandExecutor {
 		//Create a player object from a cast of the CommandSender sender
 		Player p = (Player) sender;
 		//Check if CreativeHunt is just being toggled
-		if (args.length == 0) {
+		if (args.length == 0) return false;
+		if (args.length == 1 && isOnlinePlayer(args[0])) {
 			messageBuilder = new MessageBuilder(plugin);
 			//Check if CreativeHunt is on or off for Player p as a result of the toggle
-			if (plugin.getMap().toggle(p)) {
+			if (plugin.getMap().toggle(p, Bukkit.getPlayer(args[0]))) {
 				//It is turned on - send player messages letting them know
 				enable(p);
 			}
@@ -44,17 +46,28 @@ public class CreativeHuntCommand implements CommandExecutor {
 			}
 		}
 		//If there are too many arguments or the first argument is anything other than "on" or "off", return false and send command usage
-		if (args.length > 1 || !(args[0].equalsIgnoreCase("on") ||args[0].equalsIgnoreCase("off"))) return false;
-		if (args[0].equalsIgnoreCase("on")) {
-			if (plugin.getMap().put(p)) enable(p);
+		if (args.length > 2 || !(args[0].equalsIgnoreCase("on") ||args[0].equalsIgnoreCase("off"))) return false;
+		//If there are 2 arguments, the first is "on", and the second is an online player's name
+		if (args[0].equalsIgnoreCase("on") && isOnlinePlayer(args[1])) {
+			if (plugin.getMap().put(p, Bukkit.getPlayer(args[1]))) enable(p);
 			else p.spigot().sendMessage(messageBuilder.build("&cError: You were already in CreativeHunt mode!"));
 			return true;
 		}
-		else {
+		//If the first argument is "off"
+		else if (args[0].equalsIgnoreCase("off")){
 			if (plugin.getMap().remove(p)) disable(p);
 			else p.spigot().sendMessage(messageBuilder.build("&cError: You were not in CreativeHunt mode!"));
 			return true;
 		}
+		//Otherwise - the arguments were bad - send the command usage
+		else return false;
+	}
+
+	public boolean isOnlinePlayer(String str) {
+		for (Player p : plugin.getServer().getOnlinePlayers()) {
+			if (p.getName().equalsIgnoreCase(str)) return true;
+		}
+		return false;
 	}
 	/**
 	 * Sends Player p enable messages for CreativeHunt mode

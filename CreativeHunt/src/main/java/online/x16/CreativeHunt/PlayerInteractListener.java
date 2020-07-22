@@ -22,7 +22,7 @@ public class PlayerInteractListener implements Listener {
 			if (!plugin.getMap().contains(p)) return;
 			//Check if the item the player just interacted with (in their main hand) was a compass
 			if (p.getInventory().getItemInMainHand().getType().equals(Material.COMPASS)) {
-				p.setCompassTarget(loc);
+				p.setCompassTarget(plugin.getMap().);
 			}
 		}
 	}

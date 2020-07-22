@@ -87,4 +87,7 @@ public class CreativeHuntMap {
 		p.spigot().sendMessage(messageBuilder.build("&7You have &7"+plugin.getConfig().getInt("creative-seconds")+"&7 seconds in creative mode."));
 		
 	}
+	public Player getTarget(Player p) {
+		return (Player) map.get(p).get(1);
+	}
 }
