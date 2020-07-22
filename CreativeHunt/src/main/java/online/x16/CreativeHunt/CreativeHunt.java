@@ -4,11 +4,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class CreativeHunt extends JavaPlugin {
 
-    private CreativeModeMap map;
+    private CreativeHuntMap map;
 	
 	public void onEnable() {
-    	getServer().getPluginManager().registerEvents(new OnDeathListener(this), this);
-    	map = new CreativeModeMap(this);
+    	getServer().getPluginManager().registerEvents(new OnRespawnListener(this), this);
+    	map = new CreativeHuntMap(this);
     }
 
     @Override
@@ -16,7 +16,7 @@ public class CreativeHunt extends JavaPlugin {
 
     }
     
-    public CreativeModeMap getMap() {
+    public CreativeHuntMap getMap() {
     	return map;
     }
 
