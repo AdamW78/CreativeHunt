@@ -13,8 +13,7 @@ public class OnRespawnListener implements Listener {
 	
 	public void onPlayerDeath(PlayerRespawnEvent e) {
 		if(plugin.getMap().contains(e.getPlayer())) {
-			//what to do if player is in creative hunt map
-			
+			plugin.getMap().startSurvivalTimer(e.getPlayer());
 		}
 	}
 
