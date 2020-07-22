@@ -21,8 +21,12 @@ public class PlayerInteractListener implements Listener {
 			//Check if the Player p is in CreativeHunt mode - if not, stop everything here
 			if (!plugin.getMap().contains(p)) return;
 			//Check if the item the player just interacted with (in their main hand) was a compass
+			Player target = plugin.getMap().getTarget(p);
 			if (p.getInventory().getItemInMainHand().getType().equals(Material.COMPASS)) {
-				p.setCompassTarget(plugin.getMap().);
+				if (target.getWorld().equals(p.getWorld())) p.setCompassTarget(target.getLocation());
+				else {
+					
+				}
 			}
 		}
 	}

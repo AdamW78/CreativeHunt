@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import online.x16.CreativeHunt.tools.MessageBuilder;
@@ -80,14 +81,44 @@ public class CreativeHuntMap {
 	
 	/**
 	 * Start a Survival Timer for Player p
-	 * @param p PLayer to set a timer for
+	 * @param p Player to set a timer for
 	 */
 	public void startSurvivalTimer(Player p) {
 		((ScheduledThreadPoolExecutor) map.get(p).get(0)).schedule(new GamemodeCallable(p), plugin.getConfig().getInt("creative-seconds"), TimeUnit.SECONDS);
 		p.spigot().sendMessage(messageBuilder.build("&7You have &7"+plugin.getConfig().getInt("creative-seconds")+"&7 seconds in creative mode."));
 		
 	}
+	/**
+	 * 
+	 * @param p
+	 * @return
+	 */
 	public Player getTarget(Player p) {
 		return (Player) map.get(p).get(1);
+	}
+	/**
+	 * Checks if a Player p has been targeted by someone in CreativeHunt mode
+	 * @param p Player to check whether or not is targeted
+	 * @return Player player who is tracking Player p or null if Player p is not being tracked
+	 */
+	public Player isTargeted (Player p) {
+		for(Player player : map.keySet()) {
+			if (map.get(player).get(1).equals(p)) return player;
+		}
+		return null;
+	}
+	/**
+	 * Adds a Location lastLoc to the map so if a player who is targeting another player tries to track the targeted
+	 * player after the targeted player has changed worlds, the player in CreativeHunt mode can track their last location
+	 * @param p Player who has been targeted and who has changed worlds
+	 * @param lastLoc Player p's last location in the same world as the player in CreativeHunt mode
+	 */
+	public void addLastLoc (Player p, Location lastLoc) {
+		Player trackerPlayer = isTargeted(p);
+		if(trackerPlayer == null) return;
+		map.get(trackerPlayer).add(lastLoc);
+	}
+	public Location removeLastLoc (Player targeter) {
+		return (Location) map.get(targeter).remove(2);
 	}
 }
