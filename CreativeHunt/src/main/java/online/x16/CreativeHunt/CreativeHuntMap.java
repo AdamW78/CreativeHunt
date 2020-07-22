@@ -2,19 +2,24 @@ package online.x16.CreativeHunt;
 
 import java.util.HashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.entity.Player;
+
+import online.x16.CreativeHunt.tools.MessageBuilder;
 
 public class CreativeHuntMap {
 
 	private CreativeHunt plugin;
 	private HashMap<Player, ScheduledThreadPoolExecutor> map;
+	private MessageBuilder messageBuilder;
 	/**
 	 * Constructor for CreativeHuntMap so that config values can be passed in through a CreativeHunt instance
 	 * @param instance CreativeHunt instance
 	 */
 	public CreativeHuntMap(CreativeHunt instance) {
 		plugin = instance;
+		messageBuilder = new MessageBuilder(plugin);
 	}
 	/**
 	 * Puts a Player p into a CreativeHuntMap
@@ -27,6 +32,7 @@ public class CreativeHuntMap {
 		}
 		else {
 			map.put(p, new ScheduledThreadPoolExecutor(1));
+			startSurvivalTimer(p);
 			return true;
 		}
 	}
@@ -59,5 +65,22 @@ public class CreativeHuntMap {
 	 */
 	public boolean contains(Player p) {
 		return map.containsKey(p);
+	}
+	/**
+	 * Puts a Player p into survival before the end of their timer
+	 * @param p Player to put into survival
+	 */
+	public void cancelSurvivalTimer(Player p) {
+		map.get(p).shutdown();
+	}
+	
+	/**
+	 * Start a Survival Timer for Player p
+	 * @param p PLayer to set a timer for
+	 */
+	public void startSurvivalTimer(Player p) {
+		map.get(p).schedule(new GamemodeCallable(p), plugin.getConfig().getInt("creative-seconds"), TimeUnit.SECONDS);
+		p.spigot().sendMessage(messageBuilder.build("&7You have &7"+plugin.getConfig().getInt("creative-seconds")+"&7 seconds in creative mode."));
+		
 	}
 }
