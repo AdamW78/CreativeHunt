@@ -1,6 +1,7 @@
 package online.x16.CreativeHunt;
 
 import org.bukkit.Location;
+import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -43,8 +44,11 @@ public class WorldChangeListener implements Listener {
 				plugin.getMap().remove(targeter);
 			}
 		}
+		//Cases for the hunter changing worlds
 		else if (plugin.getMap().contains(e.getPlayer())) {
-			
+			if (e.getTo().getWorld().getEnvironment().equals(Environment.NETHER)) {
+				plugin.getMap().tempArrayAdd(e.getPlayer());
+			}
 		}
 	}
 	

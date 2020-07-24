@@ -121,4 +121,7 @@ public class CreativeHuntMap {
 	public Location removeLastLoc (Player targeter) {
 		return (Location) map.get(targeter).remove(2);
 	}
+	public void tempArrayAdd(Player p) {
+		map.get(p).add(1);
+	}
 }
