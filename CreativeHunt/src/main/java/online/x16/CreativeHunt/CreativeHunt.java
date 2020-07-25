@@ -17,6 +17,7 @@ public class CreativeHunt extends JavaPlugin {
 		config.addDefault("debug", Boolean.valueOf(false));
 		config.addDefault("creative-seconds", Integer.valueOf(30));
 		config.addDefault("prefix", String.valueOf("&9[CreativeHunt]"));
+		config.addDefault("number-dropped-items", Integer.valueOf(5));
 		getServer().getPluginManager().registerEvents(new OnRespawnListener(this), this);
 		getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
 		getServer().getPluginManager().registerEvents(new WorldChangeListener(this), this);

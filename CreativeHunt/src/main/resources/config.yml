@@ -2,3 +2,5 @@ color-log: true
 debug: false
 creative-seconds: 30
 prefix: "&9[CreativeHunt]"
+#Set to 0 to disable any drops on death, set to -1 to drop everything
+number-dropped-items: 5
