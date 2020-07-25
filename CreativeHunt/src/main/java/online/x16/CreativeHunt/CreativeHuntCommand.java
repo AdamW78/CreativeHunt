@@ -13,6 +13,7 @@ public class CreativeHuntCommand implements CommandExecutor {
 	private CreativeHunt plugin;
 	private MessageBuilder messageBuilder;
 	private TrackerCompass tracker;
+	private boolean debug;
 	
 	/**
 	 * 
@@ -20,6 +21,7 @@ public class CreativeHuntCommand implements CommandExecutor {
 	 */
 	public CreativeHuntCommand(CreativeHunt instance) {
 		plugin = instance;
+		debug = plugin.getConfig().getBoolean("debug");
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -34,28 +36,37 @@ public class CreativeHuntCommand implements CommandExecutor {
 		if (args.length == 0) return false;
 		if (args.length == 1 && isOnlinePlayer(args[0])) {
 			messageBuilder = new MessageBuilder(plugin);
+			if (debug) plugin.log(sender.getName()+" has just used command and targeted a valid online player");
 			//Check if CreativeHunt is on or off for Player p as a result of the toggle
 			if (plugin.getMap().toggle(p, Bukkit.getPlayer(args[0]))) {
 				//It is turned on - send player messages letting them know
 				enable(p);
+				if (debug) plugin.log("CreativeHunt successfully enabled for "+sender.getName());
 			}
 			else {
 				//It is turned off - if the player was in creative, put them in survival (only if they have a timer going to set them to survival)
 				//Send Player p messages letting them know CreativeHunt mode was disabled
 				disable(p);
+				if (debug) plugin.log("CreativeHunt successfully disabled for "+sender.getName());
 			}
 		}
 		//If there are too many arguments or the first argument is anything other than "on" or "off", return false and send command usage
 		if (args.length > 2 || !(args[0].equalsIgnoreCase("on") ||args[0].equalsIgnoreCase("off"))) return false;
 		//If there are 2 arguments, the first is "on", and the second is an online player's name
 		if (args[0].equalsIgnoreCase("on") && isOnlinePlayer(args[1])) {
-			if (plugin.getMap().put(p, Bukkit.getPlayer(args[1]))) enable(p);
+			if (plugin.getMap().put(p, Bukkit.getPlayer(args[1]))) {
+				enable(p);
+				if (debug) plugin.log("CreativeHunt successfully enabled for "+sender.getName());
+			}
 			else p.spigot().sendMessage(messageBuilder.build("&cError: You were already in CreativeHunt mode!"));
 			return true;
 		}
 		//If the first argument is "off"
 		else if (args[0].equalsIgnoreCase("off")){
-			if (plugin.getMap().remove(p)) disable(p);
+			if (plugin.getMap().remove(p)) {
+				disable(p);
+				if (debug) plugin.log("CreativeHunt successfully disabled for "+sender.getName());
+			}
 			else p.spigot().sendMessage(messageBuilder.build("&cError: You were not in CreativeHunt mode!"));
 			return true;
 		}
