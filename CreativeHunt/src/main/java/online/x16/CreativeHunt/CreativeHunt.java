@@ -18,6 +18,9 @@ public class CreativeHunt extends JavaPlugin {
 		config.addDefault("creative-seconds", Integer.valueOf(30));
 		config.addDefault("prefix", String.valueOf("&9[CreativeHunt]"));
 		getServer().getPluginManager().registerEvents(new OnRespawnListener(this), this);
+		getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
+		getServer().getPluginManager().registerEvents(new WorldChangeListener(this), this);
+		getServer().getPluginManager().registerEvents(new OnDeathListener(this), this);
 		config.options().copyDefaults(true);
         this.saveDefaultConfig();
     	this.getCommand("creativehunt").setExecutor(new CreativeHuntCommand(this));
