@@ -6,13 +6,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import online.x16.CreativeHunt.tools.MessageBuilder;
 
 public class CreativeHuntCommand implements CommandExecutor {
 	
 	private CreativeHunt plugin;
 	private MessageBuilder messageBuilder;
+	private TrackerCompass tracker;
 	
 	/**
 	 * 
@@ -70,11 +70,13 @@ public class CreativeHuntCommand implements CommandExecutor {
 		return false;
 	}
 	/**
-	 * Sends Player p enable messages for CreativeHunt mode
+	 * Sends Player p enable messages for CreativeHunt mode and creates a tracker compass
 	 * @param p Player to whom messages are sent 
 	 */
 	public void enable(Player p) {
 		p.spigot().sendMessage(messageBuilder.build("&7CreativeHunt enabled for "+p.getDisplayName()+"&7."));
+		tracker = new TrackerCompass(plugin);
+		tracker.giveTrackerCompass(p);
 	}
 	/**
 	 * Sends Player p disable messages for CreativeHunt mode plus shuts down any ScheduledThreadPoolExecutors and puts them in survival
