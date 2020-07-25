@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
-
 import online.x16.CreativeHunt.tools.MessageBuilder;
 
 public class CreativeHuntMap {
@@ -36,6 +33,7 @@ public class CreativeHuntMap {
 			ArrayList<Object> timerTargetList = new ArrayList<Object>();
 			timerTargetList.add(new ScheduledThreadPoolExecutor(1));
 			timerTargetList.add(target);
+			timerTargetList.add(new WorldTracker(target));
 			map.put(p, new ArrayList<Object>());
 			startSurvivalTimer(p);
 			return true;
@@ -108,20 +106,12 @@ public class CreativeHuntMap {
 		return null;
 	}
 	/**
-	 * Adds a Location lastLoc to the map so if a player who is targeting another player tries to track the targeted
-	 * player after the targeted player has changed worlds, the player in CreativeHunt mode can track their last location
-	 * @param p Player who has been targeted and who has changed worlds
-	 * @param lastLoc Player p's last location in the same world as the player in CreativeHunt mode
+	 * Returns the WorldTracker object for a given tracker so that the WorldTracker can be used
+	 * in order to let the given Player tracker's compass a target
+	 * @param tracker Player for whom a a WorldTracker object is returned - will be used to give tracker a compass target
+	 * @return WorldTracker object used for tracking Player tracker's current target
 	 */
-	public void addLastLoc (Player p, Location lastLoc) {
-		Player trackerPlayer = isTargeted(p);
-		if(trackerPlayer == null) return;
-		map.get(trackerPlayer).add(lastLoc);
-	}
-	public Location removeLastLoc (Player targeter) {
-		return (Location) map.get(targeter).remove(2);
-	}
-	public void tempArrayAdd(Player p) {
-		map.get(p).add(1);
+	public WorldTracker getWorldTracker(Player tracker) {
+		return (WorldTracker) map.get(tracker).get(2);
 	}
 }

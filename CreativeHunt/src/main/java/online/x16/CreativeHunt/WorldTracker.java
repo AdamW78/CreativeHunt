@@ -14,6 +14,7 @@ public class WorldTracker {
 	
 	public WorldTracker(Player p) {
 		player = p;
+		locations.add(p.getLocation());
 	}
 	/**
 	 * Updates a tracked player's current world
@@ -45,10 +46,9 @@ public class WorldTracker {
 	 * @return Location to for the compass to point to 
 	 */
 	public Location findTrackerLoc(Player tracker) {
-		Location trackerLoc = tracker.getLocation();
 		if (curWorld == tracker.getWorld()) return player.getLocation();
 		for (Location playerLoc : locations) {
-			if (playerLoc.getWorld().equals(trackerLoc.getWorld())) return playerLoc;
+			if (playerLoc.getWorld().equals(tracker.getWorld())) return playerLoc;
 		}
 		return null;
 		
