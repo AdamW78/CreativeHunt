@@ -2,6 +2,7 @@ package online.x16.CreativeHunt;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
@@ -17,6 +18,7 @@ public class WorldChangeListener implements Listener {
 	 * 
 	 * @param e
 	 */
+	@EventHandler
 	public void onWorldChange(PlayerTeleportEvent e) {
 		
 		//Fetch the player's last location before changing worlds

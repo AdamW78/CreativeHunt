@@ -3,6 +3,7 @@ package online.x16.CreativeHunt;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
@@ -24,6 +25,7 @@ public class OnDeathListener implements Listener {
 	 * Also - makes sure a tracker compass is never among the item drops
 	 * @param e PLayerDeathEvemt for which drops are modified
 	 */
+	@EventHandler
 	public void onDeath (PlayerDeathEvent e) {
 		if (!plugin.getMap().contains(e.getEntity())) return;
 		int numDrops = plugin.getConfig().getInt("number-dropped-items");

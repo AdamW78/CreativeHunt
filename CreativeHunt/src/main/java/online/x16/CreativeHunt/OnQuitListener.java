@@ -1,6 +1,7 @@
 package online.x16.CreativeHunt;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import online.x16.CreativeHunt.tools.MessageBuilder;
@@ -16,6 +17,7 @@ public class OnQuitListener implements Listener {
 		debug = plugin.getConfig().getBoolean("debug");
 	}
 	
+	@EventHandler
 	public void onQuit (PlayerQuitEvent e) {
 		Player p = e.getPlayer();
 		if (plugin.getMap().contains(p)) {
