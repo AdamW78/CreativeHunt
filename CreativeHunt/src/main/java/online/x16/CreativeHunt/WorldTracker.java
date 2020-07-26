@@ -14,6 +14,7 @@ public class WorldTracker {
 	
 	public WorldTracker(Player p) {
 		player = p;
+		locations = new ArrayList<Location>();
 		locations.add(p.getLocation());
 	}
 	/**

@@ -19,6 +19,7 @@ public class CreativeHuntMap {
 	public CreativeHuntMap(CreativeHunt instance) {
 		plugin = instance;
 		messageBuilder = new MessageBuilder(plugin);
+		map = new HashMap<Player, ArrayList<Object>>();
 	}
 	/**
 	 * Puts a Player p into a CreativeHuntMap
@@ -34,7 +35,7 @@ public class CreativeHuntMap {
 			timerTargetList.add(new ScheduledThreadPoolExecutor(1));
 			timerTargetList.add(target);
 			timerTargetList.add(new WorldTracker(target));
-			map.put(p, new ArrayList<Object>());
+			map.put(p, timerTargetList);
 			startSurvivalTimer(p);
 			return true;
 		}
