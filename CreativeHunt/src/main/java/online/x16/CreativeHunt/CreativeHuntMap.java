@@ -12,6 +12,7 @@ public class CreativeHuntMap {
 	private CreativeHunt plugin;
 	private HashMap<Player, ArrayList<Object>> map;
 	private MessageBuilder messageBuilder;
+	private boolean debug;
 	/**
 	 * Constructor for CreativeHuntMap so that config values can be passed in through a CreativeHunt instance
 	 * @param instance CreativeHunt instance
@@ -20,6 +21,7 @@ public class CreativeHuntMap {
 		plugin = instance;
 		messageBuilder = new MessageBuilder(plugin);
 		map = new HashMap<Player, ArrayList<Object>>();
+		debug = plugin.getConfig().getBoolean("debug");
 	}
 	/**
 	 * Puts a Player p into a CreativeHuntMap
@@ -28,6 +30,7 @@ public class CreativeHuntMap {
 	 */
 	public boolean put(Player p, Player target) {
 		if (contains(p)) {
+			if (debug) plugin.log(p.getName()+"tried to be put in CreativeHunt mode and they were already in it");
 			return false;
 		}
 		else {
@@ -49,6 +52,7 @@ public class CreativeHuntMap {
 		if (map.remove(p) != null) {
 			return true;
 		}
+		if (debug) plugin.log(p.getName()+"tried to be removed from CreativeHunt mode while they were NOT in it");
 		return false;
 	}
 	/**
@@ -85,6 +89,7 @@ public class CreativeHuntMap {
 	public void startSurvivalTimer(Player p) {
 		((ScheduledThreadPoolExecutor) map.get(p).get(0)).schedule(new GamemodeCallable(p), plugin.getConfig().getInt("creative-seconds"), TimeUnit.SECONDS);
 		p.spigot().sendMessage(messageBuilder.build("&7You have &7"+plugin.getConfig().getInt("creative-seconds")+"&7 seconds in creative mode."));
+		if (debug) plugin.log("Countdown until survival mode started for "+p.getName());
 		
 	}
 	/**

@@ -33,8 +33,14 @@ public class CreativeHuntCommand implements CommandExecutor {
 		//Create a player object from a cast of the CommandSender sender
 		Player p = (Player) sender;
 		//Check if CreativeHunt is just being toggled
-		if (args.length == 0) return false;
-		if (args.length == 1 && isOnlinePlayer(args[0])) {
+		if (args.length == 0) {
+			if (plugin.getMap().remove(p)) {
+				if (debug) plugin.log("CreativeHunt successfully disabled for "+sender.getName());
+				return true;
+			}
+			else return false;
+		}
+		else if (args.length == 1 && isOnlinePlayer(args[0])) {
 			messageBuilder = new MessageBuilder(plugin);
 			if (debug) plugin.log(sender.getName()+" has just used command and targeted a valid online player");
 			//Check if CreativeHunt is on or off for Player p as a result of the toggle
@@ -42,18 +48,20 @@ public class CreativeHuntCommand implements CommandExecutor {
 				//It is turned on - send player messages letting them know
 				enable(p);
 				if (debug) plugin.log("CreativeHunt successfully enabled for "+sender.getName());
+				return true;
 			}
 			else {
 				//It is turned off - if the player was in creative, put them in survival (only if they have a timer going to set them to survival)
 				//Send Player p messages letting them know CreativeHunt mode was disabled
 				disable(p);
 				if (debug) plugin.log("CreativeHunt successfully disabled for "+sender.getName());
+				return true;
 			}
 		}
 		//If there are too many arguments or the first argument is anything other than "on" or "off", return false and send command usage
-		if (args.length > 2 || !(args[0].equalsIgnoreCase("on") ||args[0].equalsIgnoreCase("off"))) return false;
+		else if (args.length > 2 || !(args[0].equalsIgnoreCase("on") ||args[0].equalsIgnoreCase("off"))) return false;
 		//If there are 2 arguments, the first is "on", and the second is an online player's name
-		if (args[0].equalsIgnoreCase("on") && isOnlinePlayer(args[1])) {
+		else if (args[0].equalsIgnoreCase("on") && isOnlinePlayer(args[1])) {
 			if (plugin.getMap().put(p, Bukkit.getPlayer(args[1]))) {
 				enable(p);
 				if (debug) plugin.log("CreativeHunt successfully enabled for "+sender.getName());
