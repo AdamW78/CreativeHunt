@@ -86,6 +86,7 @@ public class CreativeHuntCommand implements CommandExecutor {
 	 */
 	public void enable(Player p) {
 		p.spigot().sendMessage(messageBuilder.build("&7CreativeHunt enabled for "+p.getDisplayName()+"&7."));
+		p.setGameMode(GameMode.CREATIVE);
 		tracker = new TrackerCompass(plugin);
 		tracker.giveTrackerCompass(p);
 	}
