@@ -87,7 +87,6 @@ public class CreativeHuntMap {
 	/**
 	 * Start a Survival Timer for Player p
 	 * @param p Player to set a timer for
-	 * @throws InterruptedException 
 	 */
 	public void startSurvivalTimer(Player p) {
 		ScheduledFuture<?> survivalTimer = ((ScheduledThreadPoolExecutor) map.get(p).get(0)).schedule(new GamemodeRunnable(plugin, p), 
