@@ -23,7 +23,7 @@ public class OnDeathListener implements Listener {
 	 * If zero items are to be dropped, clear the item drops and return
 	 * If a negative amount of items are to be dropped, drop all items
 	 * Also - makes sure a tracker compass is never among the item drops
-	 * @param e PLayerDeathEvemt for which drops are modified
+	 * @param e PLayerDeathEvent for which drops are modified
 	 */
 	@EventHandler
 	public void onDeath (PlayerDeathEvent e) {
@@ -35,6 +35,7 @@ public class OnDeathListener implements Listener {
 				i--;
 			}
 		}
+		if (e.getDrops().size() == 0) return;
 		if (numDrops < 0) return;
 		else if (numDrops == 0) {
 			e.getDrops().clear();
