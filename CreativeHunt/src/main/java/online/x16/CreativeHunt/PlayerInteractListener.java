@@ -23,13 +23,12 @@ public class PlayerInteractListener implements Listener {
 	public void onPlayerInteract(PlayerInteractEvent e) {
 		//Double check that the Player who interacted is a Player
 		if(e.getPlayer() instanceof Player) {
-			if (debug) plugin.log("First interact check passed");
 			//Store Player
 			Player tracker = e.getPlayer();
 			//Check if the Player p is in CreativeHunt mode - if not, stop everything here
 			if (!plugin.getMap().contains(tracker)) return;
 			//Check if Player tracker has just interacted with a compass in their main hand
-			if (tracker.getInventory().getItemInMainHand().getType().equals(Material.COMPASS)) {
+			if (e.getItem() != null && e.getItem().getType().equals(Material.COMPASS)) {
 				if (debug) plugin.log(tracker.getName()+" interacted with a compass in hand");
 				//Instantiate a MessageBuilder - we have to send the player a message guaranteed from this point on
 				messageBuilder = new MessageBuilder(plugin);
@@ -49,6 +48,7 @@ public class PlayerInteractListener implements Listener {
 				//If the target is in another world, notify their tracker of this
 				else {
 					tracker.setCompassTarget(t.findTrackerLoc(tracker));
+					plugin.log(plugin.getMap().getDelay(tracker));
 					tracker.spigot().sendMessage(messageBuilder.build("&7Compass target updated"));
 					if (debug) plugin.log(tracker.getName()+" had their compass target successfully updated");
 					if (!t.findTrackerLoc(tracker).getWorld().equals(tracker.getWorld())) {

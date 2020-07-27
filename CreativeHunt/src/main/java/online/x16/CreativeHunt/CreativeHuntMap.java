@@ -2,6 +2,7 @@ package online.x16.CreativeHunt;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.bukkit.entity.Player;
@@ -35,9 +36,9 @@ public class CreativeHuntMap {
 		}
 		else {
 			ArrayList<Object> timerTargetList = new ArrayList<Object>();
-			timerTargetList.add(new ScheduledThreadPoolExecutor(1));
+			timerTargetList.add(new ScheduledThreadPoolExecutor(2));
 			timerTargetList.add(target);
-			timerTargetList.add(new WorldTracker(target));
+			timerTargetList.add(new WorldTracker(plugin, target));
 			map.put(p, timerTargetList);
 			startSurvivalTimer(p);
 			return true;
@@ -80,16 +81,23 @@ public class CreativeHuntMap {
 	 */
 	public void cancelSurvivalTimer(Player p) {
 		((ScheduledThreadPoolExecutor) map.get(p).get(0)).shutdown();
+		map.get(p).remove(3);
 	}
 	
 	/**
 	 * Start a Survival Timer for Player p
 	 * @param p Player to set a timer for
+	 * @throws InterruptedException 
 	 */
 	public void startSurvivalTimer(Player p) {
-		((ScheduledThreadPoolExecutor) map.get(p).get(0)).schedule(new GamemodeCallable(p), plugin.getConfig().getInt("creative-seconds"), TimeUnit.SECONDS);
+		ScheduledFuture<?> survivalTimer = ((ScheduledThreadPoolExecutor) map.get(p).get(0)).schedule(new GamemodeRunnable(plugin, p), 
+				plugin.getConfig().getInt("creative-seconds"), TimeUnit.SECONDS);
+		map.get(p).add(survivalTimer);
+		plugin.log(survivalTimer.getDelay(TimeUnit.SECONDS));
 		p.spigot().sendMessage(messageBuilder.build("&7You have &7"+plugin.getConfig().getInt("creative-seconds")+"&7 seconds in creative mode."));
-		if (debug) plugin.log("Countdown until survival mode started for "+p.getName());
+		if (debug) plugin.log("Countdown until survival mode for"+plugin.getConfig().getInt("creative-seconds")+" seconds started for "+p.getName());
+		plugin.log(((ScheduledThreadPoolExecutor) map.get(p).get(0)).getQueue().toArray());
+		((ScheduledThreadPoolExecutor) map.get(p).get(0)).execute(new GamemodeRunnable(plugin, p));
 		
 	}
 	/**
@@ -120,4 +128,12 @@ public class CreativeHuntMap {
 	public WorldTracker getWorldTracker(Player tracker) {
 		return (WorldTracker) map.get(tracker).get(2);
 	}
+	@SuppressWarnings("unchecked")
+	public long getDelay(Player p) {
+		if (map.get(p).size() == 4) {
+			return ((ScheduledFuture<Boolean>) map.get(p).get(3)).getDelay(TimeUnit.SECONDS);
+		}
+		else return -1;
+	}
+	
 }

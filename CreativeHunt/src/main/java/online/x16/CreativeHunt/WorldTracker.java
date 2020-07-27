@@ -8,14 +8,19 @@ import org.bukkit.entity.Player;
 
 public class WorldTracker {
 	
+	private CreativeHunt plugin;
 	private Player player;
 	private World curWorld;
 	private ArrayList<Location> locations;
+	private boolean debug;
 	
-	public WorldTracker(Player p) {
+	public WorldTracker(CreativeHunt instance, Player p) {
+		plugin = instance;
 		player = p;
+		curWorld = p.getWorld();
 		locations = new ArrayList<Location>();
 		locations.add(p.getLocation());
+		debug = plugin.getConfig().getBoolean("debug");
 	}
 	/**
 	 * Updates a tracked player's current world
@@ -47,9 +52,13 @@ public class WorldTracker {
 	 * @return Location to for the compass to point to 
 	 */
 	public Location findTrackerLoc(Player tracker) {
-		if (curWorld == tracker.getWorld()) return player.getLocation();
+		if (curWorld == tracker.getWorld()) {
+			return player.getLocation();
+		}
 		for (Location playerLoc : locations) {
-			if (playerLoc.getWorld().equals(tracker.getWorld())) return playerLoc;
+			if (playerLoc.getWorld().equals(tracker.getWorld())) {
+				return playerLoc;
+			}
 		}
 		return null;
 		
