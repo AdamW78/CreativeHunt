@@ -24,13 +24,13 @@ public class WorldTracker {
 	}
 	/**
 	 * Updates a tracked player's current world
-	 * Checks if they habe visited that world before, and if not, add that world to their locations ArrayList
+	 * Checks if they have visited that world before, and if not, add that world to their locations ArrayList
 	 */
-	public void updateCurWorld() {
-		curWorld = player.getWorld();
+	public void updateCurWorld(Location teleportLoc) {
+		curWorld = teleportLoc.getWorld();
 		boolean alreadyVisited = false;
 		for (Location playerLoc : locations) {
-			if (playerLoc.getWorld().equals(player.getWorld())) alreadyVisited = true;
+			if (playerLoc.getWorld().equals(curWorld)) alreadyVisited = true;
 		}
 		if (!alreadyVisited) locations.add(player.getLocation());
 	}

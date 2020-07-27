@@ -44,8 +44,10 @@ public class OnDeathListener implements Listener {
 		else {
 			droppedItems = new ArrayList<ItemStack>();
 			for (int i = 0; i < numDrops; i++) {
-				droppedItems.add(e.getDrops().get((int)(e.getDrops().size()*Math.random())));
-				
+				if (e.getDrops().size() == 0) return;
+				int random = (int) (e.getDrops().size()*Math.random());
+				droppedItems.add(e.getDrops().get(random));
+				e.getDrops().remove(random);
 			}
 		}
 		e.getDrops().clear();

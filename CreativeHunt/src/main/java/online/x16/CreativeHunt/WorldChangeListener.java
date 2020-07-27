@@ -28,7 +28,7 @@ public class WorldChangeListener implements Listener {
 		if (!lastLoc.getWorld().equals(e.getTo().getWorld()) && tracker != null) {
 			WorldTracker t = plugin.getMap().getWorldTracker(tracker);
 			t.updateWorldLastLoc(lastLoc);
-			t.updateCurWorld();
+			t.updateCurWorld(e.getTo());
 		}
 	}
 	

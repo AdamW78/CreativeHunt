@@ -7,12 +7,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import online.x16.CreativeHunt.tools.MessageBuilder;
+import org.bukkit.inventory.ItemStack;
 
 public class PlayerInteractListener implements Listener {
 
 	private CreativeHunt plugin;
 	private MessageBuilder messageBuilder;
 	private boolean debug;
+	private TrackerCompass trackerCompass;
 	
 	public PlayerInteractListener(CreativeHunt instance) {
 		plugin = instance;
@@ -29,7 +31,6 @@ public class PlayerInteractListener implements Listener {
 			if (!plugin.getMap().contains(tracker)) return;
 			//Check if Player tracker has just interacted with a compass in their main hand
 			if (e.getItem() != null && e.getItem().getType().equals(Material.COMPASS)) {
-				if (debug) plugin.log(tracker.getName()+" interacted with a compass in hand");
 				//Instantiate a MessageBuilder - we have to send the player a message guaranteed from this point on
 				messageBuilder = new MessageBuilder(plugin);
 				//Fetch the WorldTracker object to use to fetch a compass target
@@ -41,16 +42,18 @@ public class PlayerInteractListener implements Listener {
 					tracker.spigot().sendMessage(messageBuilder.build("&cError: &cYou &care &ccurrently &ctracking &ca "
 															+ "&cplayer &cyou &chave &cnever &cbeen &cin &cthe &csame &cworld"
 															+ " &cwith &c- &cgo &cto &cthe &csame &cworld &cas &c"
-															+e.getPlayer().getName()+" &cfor &ctracking &cto &cwork"
+															+plugin.getMap().getTarget(tracker).getName()+" &cfor &ctracking &cto &cwork"
 															+ "&cproperly."));
 				}
 				//If the WorldTracker does NOT return null - update the player's compass target and notify the player
 				//If the target is in another world, notify their tracker of this
 				else {
-					tracker.setCompassTarget(t.findTrackerLoc(tracker));
+					trackerCompass = new TrackerCompass(plugin);
+					ItemStack trackerCompassStack = trackerCompass.createTrackerCompass(tracker);
+					tracker.getInventory().setItemInMainHand(trackerCompassStack);
 					tracker.spigot().sendMessage(messageBuilder.build("&7Compass target updated"));
 					if (debug) plugin.log(tracker.getName()+" had their compass target successfully updated");
-					if (!t.findTrackerLoc(tracker).getWorld().equals(tracker.getWorld())) {
+					if (!plugin.getMap().getTarget(tracker).getWorld().equals(tracker.getWorld())) {
 						tracker.spigot().sendMessage(messageBuilder.build("&7Pointing towards your target's last location"
 																		+ " in this world"));
 					}
