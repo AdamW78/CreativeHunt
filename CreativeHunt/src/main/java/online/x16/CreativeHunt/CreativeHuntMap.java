@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.bukkit.entity.Player;
 import online.x16.CreativeHunt.tools.MessageBuilder;
+import org.bukkit.scheduler.BukkitTask;
 
 public class CreativeHuntMap {
 
@@ -34,9 +35,10 @@ public class CreativeHuntMap {
 			if (debug) plugin.log(p.getName()+"tried to be put in CreativeHunt mode and they were already in it");
 			return false;
 		}
+
 		else {
 			ArrayList<Object> timerTargetList = new ArrayList<Object>();
-			timerTargetList.add(new ScheduledThreadPoolExecutor(2));
+			timerTargetList.add(new GamemodeRunnable(plugin, p));
 			timerTargetList.add(target);
 			timerTargetList.add(new WorldTracker(plugin, target));
 			map.put(p, timerTargetList);
@@ -80,7 +82,7 @@ public class CreativeHuntMap {
 	 * @param p Player to put into survival
 	 */
 	public void cancelSurvivalTimer(Player p) {
-		((ScheduledThreadPoolExecutor) map.get(p).get(0)).shutdown();
+		((BukkitTask) map.get(p).get(3)).cancel();
 		map.get(p).remove(3);
 	}
 	
@@ -89,14 +91,17 @@ public class CreativeHuntMap {
 	 * @param p Player to set a timer for
 	 */
 	public void startSurvivalTimer(Player p) {
-		ScheduledFuture<?> survivalTimer = ((ScheduledThreadPoolExecutor) map.get(p).get(0)).schedule(new GamemodeRunnable(plugin, p), 
-				plugin.getConfig().getInt("creative-seconds"), TimeUnit.SECONDS);
-		map.get(p).add(survivalTimer);
-		plugin.log(survivalTimer.getDelay(TimeUnit.SECONDS));
+		if (!((GamemodeRunnable) map.get(p).get(0)).hasRun()) {
+			map.get(p).add(((GamemodeRunnable) map.get(p).get(0)).runTaskLater(plugin, plugin.getConfig().getInt("creative-seconds")*20));
+			if (debug) plugin.log("Countdown until survival mode for"+plugin.getConfig().getInt("creative-seconds")+" seconds started for "+p.getName());
+		}
+		else {
+			GamemodeRunnable newRunnable = new GamemodeRunnable(plugin, p);
+			map.get(p).set(0, newRunnable);
+			newRunnable.runTaskLater(plugin, plugin.getConfig().getInt("creative-seconds")*20);
+			if (debug) plugin.log("Countdown until survival mode for"+plugin.getConfig().getInt("creative-seconds")+" seconds started for "+p.getName()+" - new GamemodeRunnable created");
+		}
 		p.spigot().sendMessage(messageBuilder.build("&7You have &7"+plugin.getConfig().getInt("creative-seconds")+"&7 seconds in creative mode."));
-		if (debug) plugin.log("Countdown until survival mode for"+plugin.getConfig().getInt("creative-seconds")+" seconds started for "+p.getName());
-		plugin.log(((ScheduledThreadPoolExecutor) map.get(p).get(0)).getQueue().toArray());
-		((ScheduledThreadPoolExecutor) map.get(p).get(0)).execute(new GamemodeRunnable(plugin, p));
 		
 	}
 	/**
@@ -127,12 +132,4 @@ public class CreativeHuntMap {
 	public WorldTracker getWorldTracker(Player tracker) {
 		return (WorldTracker) map.get(tracker).get(2);
 	}
-	@SuppressWarnings("unchecked")
-	public long getDelay(Player p) {
-		if (map.get(p).size() == 4) {
-			return ((ScheduledFuture<Boolean>) map.get(p).get(3)).getDelay(TimeUnit.SECONDS);
-		}
-		else return -1;
-	}
-	
 }

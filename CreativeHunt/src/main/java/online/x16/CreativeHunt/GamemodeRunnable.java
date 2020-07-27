@@ -9,6 +9,7 @@ public class GamemodeRunnable extends BukkitRunnable {
 	private Player p;
 	private CreativeHunt plugin;
 	private boolean debug;
+	private boolean hasRun;
 	
 	public GamemodeRunnable(CreativeHunt instance, Player player) {
 		plugin = instance;
@@ -20,6 +21,11 @@ public class GamemodeRunnable extends BukkitRunnable {
 	public void run() {
 		p.setGameMode(GameMode.SURVIVAL);
 		if (debug) plugin.log("Set gamemode to survival for "+p.getName());
+		hasRun = true;
+	}
+
+	public boolean hasRun() {
+		return hasRun;
 	}
 	
 

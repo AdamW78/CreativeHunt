@@ -48,7 +48,6 @@ public class PlayerInteractListener implements Listener {
 				//If the target is in another world, notify their tracker of this
 				else {
 					tracker.setCompassTarget(t.findTrackerLoc(tracker));
-					plugin.log(plugin.getMap().getDelay(tracker));
 					tracker.spigot().sendMessage(messageBuilder.build("&7Compass target updated"));
 					if (debug) plugin.log(tracker.getName()+" had their compass target successfully updated");
 					if (!t.findTrackerLoc(tracker).getWorld().equals(tracker.getWorld())) {
