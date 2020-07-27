@@ -1,6 +1,6 @@
 package online.x16.CreativeHunt;
 
-import java.util.List;
+import java.util.*;
 
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -42,6 +42,7 @@ public class OnDeathListener implements Listener {
 			return;
 		}
 		else {
+			droppedItems = new ArrayList<ItemStack>();
 			for (int i = 0; i < numDrops; i++) {
 				droppedItems.add(e.getDrops().get((int)(e.getDrops().size()*Math.random())));
 				
