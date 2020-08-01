@@ -1,7 +1,5 @@
 package online.x16.CreativeHunt;
 
-import online.x16.CreativeHunt.tools.MessageBuilder;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
