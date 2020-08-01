@@ -2,6 +2,8 @@ package online.x16.CreativeHunt;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import online.x16.CreativeHunt.tools.MessageBuilder;
@@ -115,7 +117,13 @@ public class CreativeHuntMap {
 	 * @return Player currently being targeted by the supplied Player p
 	 */
 	public Player getTarget(Player p) {
-		return (Player) map.get(p).get(1);
+		if (contains(p)) {
+			return (Player) map.get(p).get(1);
+		}
+		else if (hasOfflineTarget(p)) {
+			return (Player) offlineMap.get(p).get(1);
+		}
+		return null;
 	}
 	/**
 	 * Checks if a Player p has been targeted by someone in CreativeHunt mode
@@ -135,7 +143,13 @@ public class CreativeHuntMap {
 	 * @return WorldTracker object used for tracking Player tracker's current target
 	 */
 	public WorldTracker getWorldTracker(Player tracker) {
-		return (WorldTracker) map.get(tracker).get(2);
+		if (contains(tracker)) {
+			return (WorldTracker) map.get(tracker).get(2);
+		}
+		else if (hasOfflineTarget(tracker)) {
+			return (WorldTracker) offlineMap.get(tracker).get(2);
+		}
+		return null;
 	}
 
 	/**
@@ -171,7 +185,7 @@ public class CreativeHuntMap {
 	 * @param p Player to check to see if they went offline while tracking
 	 * @return Boolean for whether Player p went offline while tracking
 	 */
-	public boolean isInOfflineMap(Player p) {
+	public boolean hasOfflineTarget(Player p) {
 		return offlineMap.containsKey(p);
 	}
 
@@ -185,5 +199,21 @@ public class CreativeHuntMap {
 			if (offlineMap.get(tracker).get(1).equals(p)) return tracker;
 		}
 		return null;
+	}
+
+	public void logOnPlayer(Player p) {
+		messageBuilder = new MessageBuilder(plugin);
+		Player tracker = isOfflineTarget(p);
+		if (tracker != null) {
+			tracker.spigot().sendMessage(messageBuilder.build(ChatColor.GRAY + "Your target has logged back on - live tracking resumed."));
+			map.put(tracker, offlineMap.remove(tracker));
+			getWorldTracker(tracker).updateWorldLastLoc(p.getLocation());
+		}
+		else if (hasOfflineTarget(p)) {
+			getTarget(p).spigot().sendMessage(messageBuilder.build(ChatColor.GRAY + "Your tracker has logged back on - they are now tracking you live."));
+			map.put(p, offlineMap.remove(p));
+			getWorldTracker(p).updateWorldLastLoc((getTarget(p)).getLocation());
+
+		}
 	}
 }

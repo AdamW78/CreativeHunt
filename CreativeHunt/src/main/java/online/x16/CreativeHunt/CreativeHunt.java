@@ -23,6 +23,7 @@ public class CreativeHunt extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
 		getServer().getPluginManager().registerEvents(new WorldChangeListener(this), this);
 		getServer().getPluginManager().registerEvents(new OnDeathListener(this), this);
+        getServer().getPluginManager().registerEvents(new OnJoinListener(this), this);
         getServer().getPluginManager().registerEvents(new OnQuitListener(this), this);
 		config.options().copyDefaults(true);
         this.saveDefaultConfig();
