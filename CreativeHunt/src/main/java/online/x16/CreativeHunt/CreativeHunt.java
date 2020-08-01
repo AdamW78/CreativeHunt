@@ -14,15 +14,16 @@ public class CreativeHunt extends JavaPlugin {
     final FileConfiguration config = getConfig();
 	
 	public void onEnable() {
-		config.addDefault("color-log", Boolean.valueOf(true));
-		config.addDefault("debug", Boolean.valueOf(false));
-		config.addDefault("creative-seconds", Integer.valueOf(30));
-		config.addDefault("prefix", String.valueOf("&9[CreativeHunt]"));
-		config.addDefault("number-dropped-items", Integer.valueOf(5));
+		config.addDefault("color-log", true);
+		config.addDefault("debug", false);
+		config.addDefault("creative-seconds", 30);
+		config.addDefault("prefix", "&9[CreativeHunt]");
+		config.addDefault("number-dropped-items", 5);
 		getServer().getPluginManager().registerEvents(new OnRespawnListener(this), this);
 		getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
 		getServer().getPluginManager().registerEvents(new WorldChangeListener(this), this);
 		getServer().getPluginManager().registerEvents(new OnDeathListener(this), this);
+        getServer().getPluginManager().registerEvents(new OnQuitListener(this), this);
 		config.options().copyDefaults(true);
         this.saveDefaultConfig();
     	this.getCommand("creativehunt").setExecutor(new CreativeHuntCommand(this));

@@ -2,19 +2,18 @@ package online.x16.CreativeHunt;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import online.x16.CreativeHunt.tools.MessageBuilder;
 import org.bukkit.scheduler.BukkitTask;
 
 public class CreativeHuntMap {
 
-	private CreativeHunt plugin;
-	private HashMap<Player, ArrayList<Object>> map;
+	private final CreativeHunt plugin;
+	private final HashMap<Player, ArrayList<Object>> map;
+	private final HashMap<Player, ArrayList<Object>> offlineMap;
 	private MessageBuilder messageBuilder;
-	private boolean debug;
+	private final boolean debug;
 	/**
 	 * Constructor for CreativeHuntMap so that config values can be passed in through a CreativeHunt instance
 	 * @param instance CreativeHunt instance
@@ -22,7 +21,8 @@ public class CreativeHuntMap {
 	public CreativeHuntMap(CreativeHunt instance) {
 		plugin = instance;
 		messageBuilder = new MessageBuilder(plugin);
-		map = new HashMap<Player, ArrayList<Object>>();
+		map = new HashMap<>();
+		offlineMap = new HashMap<>();
 		debug = plugin.getConfig().getBoolean("debug");
 	}
 	/**
@@ -37,7 +37,7 @@ public class CreativeHuntMap {
 		}
 
 		else {
-			ArrayList<Object> timerTargetList = new ArrayList<Object>();
+			ArrayList<Object> timerTargetList = new ArrayList<>();
 			timerTargetList.add(new GamemodeRunnable(plugin, p));
 			timerTargetList.add(target);
 			timerTargetList.add(new WorldTracker(plugin, target));
@@ -92,22 +92,27 @@ public class CreativeHuntMap {
 	 */
 	public void startSurvivalTimer(Player p) {
 		if (!((GamemodeRunnable) map.get(p).get(0)).hasRun()) {
-			map.get(p).add(((GamemodeRunnable) map.get(p).get(0)).runTaskLater(plugin, plugin.getConfig().getInt("creative-seconds")*20));
-			if (debug) plugin.log("Countdown until survival mode for"+plugin.getConfig().getInt("creative-seconds")+" seconds started for "+p.getName());
+			map.get(p).add(((GamemodeRunnable) map.get(p).get(0)).runTaskLater(plugin,
+					plugin.getConfig().getInt("creative-seconds")*20));
+			if (debug) plugin.log("Countdown until survival mode for"
+					+plugin.getConfig().getInt("creative-seconds")+" seconds started for "+p.getName());
 		}
 		else {
 			GamemodeRunnable newRunnable = new GamemodeRunnable(plugin, p);
 			map.get(p).set(0, newRunnable);
 			newRunnable.runTaskLater(plugin, plugin.getConfig().getInt("creative-seconds")*20);
-			if (debug) plugin.log("Countdown until survival mode for"+plugin.getConfig().getInt("creative-seconds")+" seconds started for "+p.getName()+" - new GamemodeRunnable created");
+			if (debug) plugin.log("Countdown until survival mode for"+
+					plugin.getConfig().getInt("creative-seconds")
+					+" seconds started for "+p.getName()+" - new GamemodeRunnable created");
 		}
-		p.spigot().sendMessage(messageBuilder.build("&7You have &7"+plugin.getConfig().getInt("creative-seconds")+"&7 seconds in creative mode."));
+		p.spigot().sendMessage(messageBuilder.build("&7You have &7"+
+				plugin.getConfig().getInt("creative-seconds")+"&7 seconds in creative mode."));
 		
 	}
 	/**
-	 * 
-	 * @param p
-	 * @return
+	 * Fetches the target of Player p if p is currently tracking someone]
+	 * @param p Player to find current target for
+	 * @return Player currently being targeted by the supplied Player p
 	 */
 	public Player getTarget(Player p) {
 		return (Player) map.get(p).get(1);
@@ -131,5 +136,54 @@ public class CreativeHuntMap {
 	 */
 	public WorldTracker getWorldTracker(Player tracker) {
 		return (WorldTracker) map.get(tracker).get(2);
+	}
+
+	/**
+	 * Store a player who has logged off while in CreativeHunt mode - either as tracker or the Player being hunted
+	 * Put the player and their corresponding ArrayList<Object> in the offlineMap
+	 * Update the offline player's last location (if they were being tracked) so that the tracker's compass works
+	 * @param p Player to log off and put in the offlineMap
+	 * @param lastLoc Location where the Player p logged off - only used if p was being tracked
+	 */
+	public void logOffPlayer(Player p, Location lastLoc) {
+		Player tracker = isTargeted(p);
+		if (tracker != null) {
+			messageBuilder = new MessageBuilder(plugin);
+			tracker.spigot().sendMessage(messageBuilder.build("&7The &7player &7you &7were &7tracking " +
+					"&7has &7logged &7off. &7Tracking &7will &7show &7you &7their &7last &7location &7while &7online."));
+			getWorldTracker(tracker).updateWorldLastLoc(lastLoc);
+			offlineMap.put(tracker, map.remove(tracker));
+			if (debug) plugin.log(p.getName()+" has quit and was placed into the offline players map - they were being hunted.");
+		}
+		else if (contains(p)) {
+			Player target = getTarget(p);
+			messageBuilder = new MessageBuilder(plugin);
+			target.spigot().sendMessage(messageBuilder.build("&7The &7player &7who &7was &7tracking &7you " +
+					"&7has &7logged &7off. &7Tracking &7will &7resume &7if &7they &7log &7back &7on."));
+			offlineMap.put(p, map.remove(p));
+			if (debug) plugin.log(p.getName()+" has quit and was removed from the CreativeHuntMap - they were hunting.");
+
+		}
+	}
+
+	/**
+	 * Checks if a player went offline while tracking someone in CreativeHunt mode
+	 * @param p Player to check to see if they went offline while tracking
+	 * @return Boolean for whether Player p went offline while tracking
+	 */
+	public boolean isInOfflineMap(Player p) {
+		return offlineMap.containsKey(p);
+	}
+
+	/**
+	 * Checks if a player went offline while being tracked by someone in CreativeHunt mode
+	 * @param p Player to check to see if they went offline while being tracked
+	 * @return Player targeting the inputted player, or null if Player p did not log off while in CreativeHunt mode
+	 */
+	public Player isOfflineTarget(Player p) {
+		for (Player tracker : offlineMap.keySet()) {
+			if (offlineMap.get(tracker).get(1).equals(p)) return tracker;
+		}
+		return null;
 	}
 }
