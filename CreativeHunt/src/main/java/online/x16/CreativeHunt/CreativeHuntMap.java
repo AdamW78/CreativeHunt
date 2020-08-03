@@ -2,12 +2,10 @@ package online.x16.CreativeHunt;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import online.x16.CreativeHunt.tools.MessageBuilder;
-import org.bukkit.scheduler.BukkitTask;
 
 public class CreativeHuntMap {
 
@@ -44,7 +42,6 @@ public class CreativeHuntMap {
 			timerTargetList.add(target);
 			timerTargetList.add(new WorldTracker(plugin, target));
 			map.put(p, timerTargetList);
-			startSurvivalTimer(p);
 			return true;
 		}
 	}
@@ -54,9 +51,7 @@ public class CreativeHuntMap {
 	 * @return boolean Whether or not Player was successfully removed
 	 */
 	public boolean remove(Player p) {
-		if (map.remove(p) != null) {
-			return true;
-		}
+		if (map.remove(p) != null || offlineMap.remove(p) != null) return true;
 		if (debug) plugin.log(p.getName()+"tried to be removed from CreativeHunt mode while they were NOT in it");
 		return false;
 	}
@@ -66,9 +61,7 @@ public class CreativeHuntMap {
 	 * @return boolean Whether or not the player is in CreativeHuntMap after the method call
 	 */
 	public boolean toggle (Player p, Player target) {
-		if (contains(p)) {
-			return remove(p);
-		}
+		if (contains(p) || hasOfflineTarget(p)) return !remove(p);
 		return put(p, target);
 	}
 	/**
@@ -80,12 +73,15 @@ public class CreativeHuntMap {
 		return map.containsKey(p);
 	}
 	/**
-	 * Puts a Player p into survival before the end of their timer
+	 * This gets run on the disabling of CreativeHunt mode
+	 * If the GamemodeRunnable has NOT already run, run it - otherwise, do nothing
 	 * @param p Player to put into survival
 	 */
 	public void cancelSurvivalTimer(Player p) {
-		((BukkitTask) map.get(p).get(3)).cancel();
-		map.get(p).remove(3);
+		GamemodeRunnable runnable = (GamemodeRunnable)(map.get(p).get(0));
+		if (runnable.hasRun()) {
+			((GamemodeRunnable) map.get(p).get(0)).runTask(plugin);
+		}
 	}
 	
 	/**
@@ -93,13 +89,16 @@ public class CreativeHuntMap {
 	 * @param p Player to set a timer for
 	 */
 	public void startSurvivalTimer(Player p) {
-		if (!((GamemodeRunnable) map.get(p).get(0)).hasRun()) {
-			map.get(p).add(((GamemodeRunnable) map.get(p).get(0)).runTaskLater(plugin,
-					plugin.getConfig().getInt("creative-seconds")*20));
+		//Check if the GamemodeRunnable has NOT already run for Player p
+		if (((GamemodeRunnable) map.get(p).get(0)).hasRun()) {
+			//Schedule GamemodeRunnable to be run in creative-seconds seconds
+			((GamemodeRunnable) map.get(p).get(0)).runTaskLater(plugin, plugin.getConfig().getInt("creative-seconds")*20);
 			if (debug) plugin.log("Countdown until survival mode for"
 					+plugin.getConfig().getInt("creative-seconds")+" seconds started for "+p.getName());
 		}
+		//This runs is the GamemodeRunnable HAS already run for Player p
 		else {
+			//Instantiate a new GamemodeRunnable
 			GamemodeRunnable newRunnable = new GamemodeRunnable(plugin, p);
 			map.get(p).set(0, newRunnable);
 			newRunnable.runTaskLater(plugin, plugin.getConfig().getInt("creative-seconds")*20);

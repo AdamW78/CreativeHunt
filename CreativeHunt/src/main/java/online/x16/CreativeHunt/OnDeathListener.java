@@ -10,9 +10,8 @@ import org.bukkit.inventory.ItemStack;
 
 public class OnDeathListener implements Listener {
 	
-	private CreativeHunt plugin;
-	private List<ItemStack> droppedItems;
-	
+	private final CreativeHunt plugin;
+
 	public OnDeathListener(CreativeHunt instance) {
 		plugin = instance;
 	}
@@ -28,7 +27,7 @@ public class OnDeathListener implements Listener {
 	@EventHandler
 	public void onDeath (PlayerDeathEvent e) {
 		if (!plugin.getMap().contains(e.getEntity())) return;
-		int numDrops = plugin.getConfig().getInt("number-dropped-items");
+		final int numDrops = plugin.getConfig().getInt("number-dropped-items");
 		for (int i = 0; i < e.getDrops().size(); i++) {
 			if (e.getDrops().get(i).getType().equals(Material.COMPASS)) {
 				e.getDrops().remove(i);
@@ -36,13 +35,14 @@ public class OnDeathListener implements Listener {
 			}
 		}
 		if (e.getDrops().size() == 0) return;
+		List<ItemStack> droppedItems;
 		if (numDrops < 0) return;
 		else if (numDrops == 0) {
 			e.getDrops().clear();
 			return;
 		}
 		else {
-			droppedItems = new ArrayList<ItemStack>();
+			droppedItems = new ArrayList<>();
 			for (int i = 0; i < numDrops; i++) {
 				if (e.getDrops().size() == 0) return;
 				int random = (int) (e.getDrops().size()*Math.random());
