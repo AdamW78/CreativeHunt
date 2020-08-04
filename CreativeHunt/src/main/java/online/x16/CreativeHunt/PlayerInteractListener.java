@@ -25,7 +25,7 @@ public class PlayerInteractListener implements Listener {
 		//Store Player
 		Player tracker = e.getPlayer();
 		//Check if the Player p is in CreativeHunt mode - if not, stop everything here
-		if (!plugin.getMap().contains(tracker) || plugin.getMap().hasOfflineTarget(tracker)) return;
+		if (!(plugin.getMap().contains(tracker) || plugin.getMap().hasOfflineTarget(tracker))) return;
 		//Check if Player tracker has just interacted with a compass in their main hand
 		if (e.getItem() != null && e.getItem().getType().equals(Material.COMPASS)) {
 			//Instantiate a MessageBuilder - we have to send the player a message guaranteed from this point on

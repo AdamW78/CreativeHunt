@@ -20,7 +20,9 @@ public class OnQuitListener implements Listener {
 	@EventHandler
 	public void onQuit (PlayerQuitEvent e) {
 		Player p = e.getPlayer();
+		plugin.log("Player who just logged off was being targeted by: "+plugin.getMap().isTargeted(p));
 		if (plugin.getMap().contains(p) || plugin.getMap().isTargeted(p) != null) {
+			if (plugin.getMap().contains(p)) plugin.log("QUIT EVENT FOR TRACKER "+e.getPlayer().getName());
 			plugin.getMap().logOffPlayer(p, p.getLocation());
 		}
 	}

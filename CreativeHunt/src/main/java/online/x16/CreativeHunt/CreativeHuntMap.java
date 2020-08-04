@@ -169,7 +169,9 @@ public class CreativeHuntMap {
 			if (debug) plugin.log(p.getName()+" has quit and was placed into the offline players map - they were being hunted.");
 		}
 		else if (contains(p)) {
+			plugin.log("Player "+p.getName()+" just logged off while tracking");
 			Player target = getTarget(p);
+			plugin.log("Target for player who just logged off was "+target.getName());
 			messageBuilder = new MessageBuilder(plugin);
 			target.spigot().sendMessage(messageBuilder.build("&7The &7player &7who &7was &7tracking &7you " +
 					"&7has &7logged &7off. &7Tracking &7will &7resume &7if &7they &7log &7back &7on."));
@@ -195,7 +197,12 @@ public class CreativeHuntMap {
 	 */
 	public Player isOfflineTarget(Player p) {
 		for (Player tracker : offlineMap.keySet()) {
-			if (offlineMap.get(tracker).get(1).equals(p)) return tracker;
+			if (debug) plugin.log("Comparing offline tracked player "
+					+((Player) (offlineMap.get(tracker).get(1))).getName()
+					+" to new player logging on "+p.getName());
+			if (((Player) (offlineMap.get(tracker).get(1))).getUniqueId().equals(p.getUniqueId())) {
+				return tracker;
+			}
 		}
 		return null;
 	}
