@@ -1,7 +1,10 @@
 package online.x16.CreativeHunt;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -11,7 +14,7 @@ public class CreativeHuntMap {
 
 	private final CreativeHunt plugin;
 	private final HashMap<Player, ArrayList<Object>> map;
-	private final HashMap<Player, ArrayList<Object>> offlineMap;
+	private final HashMap<UUID, ArrayList<Object>> offlineMap;
 	private MessageBuilder messageBuilder;
 	private final boolean debug;
 	/**
@@ -51,7 +54,7 @@ public class CreativeHuntMap {
 	 * @return boolean Whether or not Player was successfully removed
 	 */
 	public boolean remove(Player p) {
-		if (map.remove(p) != null || offlineMap.remove(p) != null) return true;
+		if (map.remove(p) != null || offlineMap.remove(p.getUniqueId()) != null) return true;
 		if (debug) plugin.log(p.getName()+"tried to be removed from CreativeHunt mode while they were NOT in it");
 		return false;
 	}
@@ -111,16 +114,24 @@ public class CreativeHuntMap {
 		
 	}
 	/**
-	 * Fetches the target of Player p if p is currently tracking someone]
+	 * Fetches the target of Player p if p is currently tracking someone
 	 * @param p Player to find current target for
 	 * @return Player currently being targeted by the supplied Player p
 	 */
 	public Player getTarget(Player p) {
-		if (contains(p)) {
-			return (Player) map.get(p).get(1);
-		}
-		else if (hasOfflineTarget(p)) {
-			return (Player) offlineMap.get(p).get(1);
+		if (contains(p)) return (Player) map.get(p).get(1);
+		return null;
+	}
+
+	/**
+	 * Fetches the UUID of the target for player with UUID uuid
+	 * @param uuid UUID of the player for whom a target will be returned
+	 * @return UUID of Player with UUID uuid's target or null if they have no target
+	 */
+	public UUID getTarget(UUID uuid) {
+		if (hasOfflineTarget(uuid)) {
+			if (debug) plugin.log("Searching for target of UUID: "+uuid+" in map of "+offlineMap.size()+" players");
+			return (UUID) offlineMap.get(uuid).get(1);
 		}
 		return null;
 	}
@@ -146,7 +157,7 @@ public class CreativeHuntMap {
 			return (WorldTracker) map.get(tracker).get(2);
 		}
 		else if (hasOfflineTarget(tracker)) {
-			return (WorldTracker) offlineMap.get(tracker).get(2);
+			return (WorldTracker) offlineMap.get(tracker.getUniqueId()).get(2);
 		}
 		return null;
 	}
@@ -159,25 +170,49 @@ public class CreativeHuntMap {
 	 * @param lastLoc Location where the Player p logged off - only used if p was being tracked
 	 */
 	public void logOffPlayer(Player p, Location lastLoc) {
+		//Storing Player tracker - isTargeted method either returns null or the player targeting p, so use this to check if p is a target or a tracker
 		Player tracker = isTargeted(p);
+		//ArrayList that will be fetched from map - This has to be modified to ONLY contain UUIDs and no Player objects
+		ArrayList<Object> offlineArrayList;
+		//If tracker is NOT null, we know p was being targeted, so we put tracker's UUID as the key in the offlineMap with p's UUID as an object in tracker's ArrayList
 		if (tracker != null) {
+			//Instantiate messageBuilder to notify tracker that their target p has just logged off
 			messageBuilder = new MessageBuilder(plugin);
 			tracker.spigot().sendMessage(messageBuilder.build("&7The &7player &7you &7were &7tracking " +
 					"&7has &7logged &7off. &7Tracking &7will &7show &7you &7their &7last &7location &7while &7online."));
+			//Update tracker's WorldTracker - the lastLoc p had in their current world should be stored as the target for tracker
 			getWorldTracker(tracker).updateWorldLastLoc(lastLoc);
-			offlineMap.put(tracker, map.remove(tracker));
+			//Remove the entry from map associated with the key tracker, and then store the ArrayList returned and replace p with p.getUniqueID()
+			offlineArrayList = map.remove(tracker);
+			offlineArrayList.set(1, p.getUniqueId());
+			//Put the tracker's UUID in the offlineMap as the key for the modified ArrayList
+			offlineMap.put(tracker.getUniqueId(), offlineArrayList);
 			if (debug) plugin.log(p.getName()+" has quit and was placed into the offline players map - they were being hunted.");
 		}
+		//Tracker is null - check that the player being logged off is currently tracking - if not, do nothing
 		else if (contains(p)) {
-			plugin.log("Player "+p.getName()+" just logged off while tracking");
+			//Fetch the p's current target and store it - instantiate messageBuilder in order to notify p's target that their tracker p has just logged off
 			Player target = getTarget(p);
 			plugin.log("Target for player who just logged off was "+target.getName());
 			messageBuilder = new MessageBuilder(plugin);
 			target.spigot().sendMessage(messageBuilder.build("&7The &7player &7who &7was &7tracking &7you " +
 					"&7has &7logged &7off. &7Tracking &7will &7resume &7if &7they &7log &7back &7on."));
-			offlineMap.put(p, map.remove(p));
-			if (debug) plugin.log(p.getName()+" has quit and was removed from the CreativeHuntMap - they were hunting.");
-
+			//Remove the entry from map with p as the tracker - store it to replace p's target with the UniqueID of p's target just like above and put p and
+			// offlineArrayList into the offlineMap
+			offlineArrayList = map.remove(p);
+			offlineArrayList.set(1, target.getUniqueId());
+			offlineMap.put(p.getUniqueId(), offlineArrayList);
+			if (debug) plugin.log(p.getName()+" has quit and was  - they were hunting.");
+		}
+		//If p was already in the offlineMap when the logOffPLayer call was made, remove p and their target/tracker from the CreativeHuntMap entirely
+		else if (hasOfflineTarget(p) || isOfflineTarget(p) != null) {
+			if (offlineMap.remove(p.getUniqueId()) == null) {
+				offlineMap.remove(isOfflineTarget(p));
+				if (debug) plugin.log(p.getName()+" was already in the offlineMap as a target when they logged off " +
+						"- they have been completely removed from CreativeHunt mode");
+			}
+			else if (debug) plugin.log(p.getName()+" was already in the offlineMap as a tracker when they logged off "+
+					"- they have been completely removed from CreativeHunt mode");
 		}
 	}
 
@@ -187,7 +222,20 @@ public class CreativeHuntMap {
 	 * @return Boolean for whether Player p went offline while tracking
 	 */
 	public boolean hasOfflineTarget(Player p) {
-		return offlineMap.containsKey(p);
+		return hasOfflineTarget(p.getUniqueId());
+	}
+
+	/**
+	 * Checks if a player went offline while tracking someone in CreativeHunt mode
+	 * @param uuid UUID of player to check for having gone offline while tracking
+	 * @return Boolean for whether a player with UUID uuid went offline while tracking
+	 */
+	public boolean hasOfflineTarget(UUID uuid) {
+		//Run through for-each loop of every single UUID in the offline map - if one matches uuid, then return true - otherwise, return false
+		for (UUID playerUUID : offlineMap.keySet()) {
+			if (playerUUID.equals(uuid)) return true;
+		}
+		return false;
 	}
 
 	/**
@@ -195,29 +243,52 @@ public class CreativeHuntMap {
 	 * @param p Player to check to see if they went offline while being tracked
 	 * @return Player targeting the inputted player, or null if Player p did not log off while in CreativeHunt mode
 	 */
-	public Player isOfflineTarget(Player p) {
-		for (Player tracker : offlineMap.keySet()) {
-			if (debug) plugin.log("Comparing offline tracked player "
-					+((Player) (offlineMap.get(tracker).get(1))).getName()
-					+" to new player logging on "+p.getName());
-			if (((Player) (offlineMap.get(tracker).get(1))).getUniqueId().equals(p.getUniqueId())) {
+	public UUID isOfflineTarget(Player p) {
+		for (UUID tracker : offlineMap.keySet()) {
+			if (debug) plugin.log("Comparing offline tracked player with UUID "+((UUID) (offlineMap.get(tracker).get(1)))
+					+" to new player logging on "+p.getName()+" with UUID "+ p.getUniqueId());
+			if (((UUID) (offlineMap.get(tracker).get(1))).equals(p.getUniqueId())) {
 				return tracker;
 			}
 		}
 		return null;
 	}
 
-	public void logOnPlayer(Player p) {
+	/**
+	 * Move a recently logged on player from offlineMap to map - converts UUIDs to Player objects, puts them into map, and updates WorldTracker locations
+	 * @param p Player logging on to be put into map from offlineMap as either a tracker or a target
+	 * @throws NullPointerException Thrown when fetching a Player object from the server using a UUID returns null
+	 */
+	public void logOnPlayer(Player p) throws NullPointerException {
+		//Instantiate a messageBuilder to notify players of the new login - store the UUID of the tracker - this will be used to check if p was being tracked or tracking
 		messageBuilder = new MessageBuilder(plugin);
-		Player tracker = isOfflineTarget(p);
-		if (tracker != null) {
+		UUID trackerUUID = isOfflineTarget(p);
+		//A UUID was found from isOfflineTarget
+		ArrayList<Object> onlineArrayList;
+		if (trackerUUID != null) {
+			//Fetch a player object from the tracker's UUID - we need this to add a Player object to map
+			Player tracker = plugin.getServer().getPlayer(trackerUUID);
+			//Throw a NullPointerException if fetching tracker from trackerUUID results in tracker being null
+			if (tracker == null) throw new NullPointerException("Unable to fetch online player from UUID of recently logged in player's trackerUUID");
+			//Notify tracker that their target has logged back on
 			tracker.spigot().sendMessage(messageBuilder.build(ChatColor.GRAY + "Your target has logged back on - live tracking resumed."));
-			map.put(tracker, offlineMap.remove(tracker));
+			//Fetch the ArrayList for trackerUUID from offlineMap by removing the entry - store the ArrayList and change the UUID to a Player object
+			onlineArrayList = offlineMap.remove(trackerUUID);
+			onlineArrayList.set(1, p);
+			//Put the newly modified ArrayList into map as the value for key tracker - then, update the WorldTracker for tracker
+			map.put(tracker, onlineArrayList);
 			getWorldTracker(tracker).updateWorldLastLoc(p.getLocation());
 		}
+		//trackerUUID is null - check if p has a target in offlineMap
 		else if (hasOfflineTarget(p)) {
+			//p has a target in offlineMap - notify p's target that their tracker p has just logged back on
+			if (debug) plugin.log("Begun log on process for "+p.getName()+" - they were tracking and then logged off");
+			//Fetch the ArrayList for p's UUID from offlineMap by removing the entry - store the ArrayList and change the UUID at index 1 to a Player created from it
+			onlineArrayList = offlineMap.remove(p.getUniqueId());
+			onlineArrayList.set(1, plugin.getServer().getPlayer((UUID) onlineArrayList.get(1)));
+			//Put the modified ArrayList into map as the value for the key p - then, update the WorldTracker for p
+			map.put(p, onlineArrayList);
 			getTarget(p).spigot().sendMessage(messageBuilder.build(ChatColor.GRAY + "Your tracker has logged back on - they are now tracking you live."));
-			map.put(p, offlineMap.remove(p));
 			getWorldTracker(p).updateWorldLastLoc((getTarget(p)).getLocation());
 
 		}

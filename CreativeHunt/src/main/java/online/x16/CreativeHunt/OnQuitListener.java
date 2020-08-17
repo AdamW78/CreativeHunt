@@ -19,11 +19,19 @@ public class OnQuitListener implements Listener {
 	 */
 	@EventHandler
 	public void onQuit (PlayerQuitEvent e) {
+		final boolean debug = plugin.getConfig().getBoolean("debug");
+		final CreativeHuntMap map = plugin.getMap();
 		Player p = e.getPlayer();
-		plugin.log("Player who just logged off was being targeted by: "+plugin.getMap().isTargeted(p));
-		if (plugin.getMap().contains(p) || plugin.getMap().isTargeted(p) != null) {
-			if (plugin.getMap().contains(p)) plugin.log("QUIT EVENT FOR TRACKER "+e.getPlayer().getName());
-			plugin.getMap().logOffPlayer(p, p.getLocation());
+		if (debug) {
+			if (map.isTargeted(p) != null) {
+				plugin.log("Player who just logged off was being targeted by: " + map.isTargeted(p));
+			}
+			else if (map.isOfflineTarget(p) != null) {
+				plugin.log("Player who just logged off was being targeted by: " + map.isOfflineTarget(p));
+			}
+		}
+		if (map.contains(p) || plugin.getMap().isTargeted(p) != null) {
+			map.logOffPlayer(p, p.getLocation());
 		}
 	}
 

@@ -13,13 +13,17 @@ public class OnJoinListener implements Listener {
         plugin = instance;
     }
 
+    /**
+     * Fetch the Player from teh event
+     * @param e
+     */
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         final CreativeHuntMap map = plugin.getMap();
-        System.out.println(map.hasOfflineTarget(p));
-        System.out.println(map.isOfflineTarget(p));
         if (map.hasOfflineTarget(p) || map.isOfflineTarget(p) != null) {
+            plugin.log(p.getName()+" has just logged back in after either being hunted and logging off " +
+                    "or hunting and logging off");
             map.logOnPlayer(p);
         }
     }
